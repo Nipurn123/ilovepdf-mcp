@@ -1,0 +1,52 @@
+{
+  "name": "ilovepdf-mcp",
+  "version": "2.0.0",
+  "description": "Modular MCP server for iLovePDF/iLoveIMG API. 30+ tools for PDF and image processing.",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "ilovepdf-mcp": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "start": "node build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "ilovepdf",
+    "iloveimg",
+    "pdf",
+    "compress",
+    "merge",
+    "split",
+    "convert",
+    "image",
+    "ocr",
+    "watermark"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nipurn123/ilovepdf-mcp.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "form-data": "^4.0.0",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ]
+}
