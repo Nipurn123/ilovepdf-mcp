@@ -43,13 +43,35 @@ export interface ToolDefinition {
   }>;
 }
 
+const IMAGE_TOOLS = [
+  "compressimage",
+  "resizeimage",
+  "convertimage",
+  "removebackgroundimage",
+  "upscaleimage",
+  "watermarkimage",
+  "cropimage",
+  "rotateimage",
+  "repairimage",
+];
+
 export class ILovePDFClient {
   private auth: Auth;
   private cachedToken: string | null = null;
   private tokenExpiry: number = 0;
+  private apiBase: string;
+  private isImageTool: boolean;
 
-  constructor(publicKey: string, secretKey: string) {
+  constructor(
+    publicKey: string,
+    secretKey: string,
+    isImageTool: boolean = false,
+  ) {
     this.auth = { public_key: publicKey, secret_key: secretKey };
+    this.apiBase = isImageTool
+      ? "https://api.iloveimg.com"
+      : "https://api.ilovepdf.com";
+    this.isImageTool = isImageTool;
   }
 
   async getToken(): Promise<string> {
@@ -57,7 +79,7 @@ export class ILovePDFClient {
       return this.cachedToken;
     }
 
-    const response = await fetch("https://api.ilovepdf.com/v1/auth", {
+    const response = await fetch(`${this.apiBase}/v1/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ public_key: this.auth.public_key }),
@@ -75,8 +97,10 @@ export class ILovePDFClient {
 
   async startTask(tool: string, region: string = "us"): Promise<TaskInfo> {
     const token = await this.getToken();
+    // iLoveIMG only works with EU region
+    const effectiveRegion = this.isImageTool ? "eu" : region;
     const response = await fetch(
-      `https://api.ilovepdf.com/v1/start/${tool}/${region}`,
+      `${this.apiBase}/v1/start/${tool}/${effectiveRegion}`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },

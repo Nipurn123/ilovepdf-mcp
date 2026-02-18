@@ -1,15 +1,23 @@
 import { ToolDefinition, ILovePDFClient } from "../types.js";
 import * as path from "path";
 
+const imageKeyProps = {
+  image_public_key: {
+    type: "string",
+    description: "iLoveIMG project public key (required for image tools)",
+  },
+  secret_key: { type: "string", description: "iLoveIMG secret key" },
+};
+
 export const imageTools: ToolDefinition[] = [
   {
     name: "compress_image",
-    description: "Compress JPG, PNG, or GIF images to reduce file size.",
+    description:
+      "Compress JPG, PNG, or GIF images to reduce file size. Requires iLoveIMG project keys.",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...imageKeyProps,
         file: { type: "string", description: "Path to image file or URL" },
         output: { type: "string", description: "Output file path" },
         compression_level: {
@@ -18,7 +26,7 @@ export const imageTools: ToolDefinition[] = [
           default: "recommended",
         },
       },
-      required: ["public_key", "secret_key", "file", "output"],
+      required: ["image_public_key", "secret_key", "file", "output"],
     },
     handler: async (args, client) => {
       const taskInfo = await client.startTask("compressimage");
@@ -70,12 +78,11 @@ export const imageTools: ToolDefinition[] = [
   {
     name: "resize_image",
     description:
-      "Resize image by pixels or percentage. Maintains aspect ratio by default.",
+      "Resize image by pixels or percentage. Maintains aspect ratio by default. Requires iLoveIMG project keys.",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...imageKeyProps,
         file: { type: "string", description: "Path to image file or URL" },
         output: { type: "string", description: "Output file path" },
         mode: {
@@ -88,7 +95,7 @@ export const imageTools: ToolDefinition[] = [
         percentage: { type: "number", description: "Resize percentage" },
         maintain_ratio: { type: "boolean", default: true },
       },
-      required: ["public_key", "secret_key", "file", "output"],
+      required: ["image_public_key", "secret_key", "file", "output"],
     },
     handler: async (args, client) => {
       const taskInfo = await client.startTask("resizeimage");
@@ -151,12 +158,12 @@ export const imageTools: ToolDefinition[] = [
 
   {
     name: "convert_image",
-    description: "Convert image to JPG, PNG, GIF, or HEIC format.",
+    description:
+      "Convert image to JPG, PNG, GIF, or HEIC format. Requires iLoveIMG project keys.",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...imageKeyProps,
         file: { type: "string", description: "Path to image file or URL" },
         output: {
           type: "string",
@@ -168,7 +175,7 @@ export const imageTools: ToolDefinition[] = [
           default: "jpg",
         },
       },
-      required: ["public_key", "secret_key", "file", "output"],
+      required: ["image_public_key", "secret_key", "file", "output"],
     },
     handler: async (args, client) => {
       const taskInfo = await client.startTask("convertimage");
@@ -220,16 +227,15 @@ export const imageTools: ToolDefinition[] = [
   {
     name: "remove_background",
     description:
-      "Remove background from image using AI. Outputs transparent PNG.",
+      "Remove background from image using AI. Outputs transparent PNG. Requires iLoveIMG project keys.",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...imageKeyProps,
         file: { type: "string", description: "Path to image file or URL" },
         output: { type: "string", description: "Output PNG file path" },
       },
-      required: ["public_key", "secret_key", "file", "output"],
+      required: ["image_public_key", "secret_key", "file", "output"],
     },
     handler: async (args, client) => {
       const taskInfo = await client.startTask("removebackgroundimage");
@@ -279,12 +285,12 @@ export const imageTools: ToolDefinition[] = [
 
   {
     name: "upscale_image",
-    description: "Upscale image using AI. Supports 2x or 4x enlargement.",
+    description:
+      "Upscale image using AI. Supports 2x or 4x enlargement. Requires iLoveIMG project keys.",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...imageKeyProps,
         file: { type: "string", description: "Path to image file or URL" },
         output: { type: "string", description: "Output file path" },
         multiplier: {
@@ -294,7 +300,7 @@ export const imageTools: ToolDefinition[] = [
           description: "Upscale factor",
         },
       },
-      required: ["public_key", "secret_key", "file", "output"],
+      required: ["image_public_key", "secret_key", "file", "output"],
     },
     handler: async (args, client) => {
       const taskInfo = await client.startTask("upscaleimage");
@@ -345,12 +351,12 @@ export const imageTools: ToolDefinition[] = [
 
   {
     name: "watermark_image",
-    description: "Add text or image watermark to images.",
+    description:
+      "Add text or image watermark to images. Requires iLoveIMG project keys.",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...imageKeyProps,
         file: { type: "string", description: "Path to image file or URL" },
         output: { type: "string", description: "Output file path" },
         text: { type: "string", description: "Watermark text" },
@@ -378,7 +384,7 @@ export const imageTools: ToolDefinition[] = [
         },
         rotation: { type: "number", default: 0, description: "Rotation 0-360" },
       },
-      required: ["public_key", "secret_key", "file", "output", "text"],
+      required: ["image_public_key", "secret_key", "file", "output", "text"],
     },
     handler: async (args, client) => {
       const taskInfo = await client.startTask("watermarkimage");
@@ -416,6 +422,10 @@ export const imageTools: ToolDefinition[] = [
               font_color: args.font_color || "#000000",
               transparency: args.transparency || 100,
               rotation: args.rotation || 0,
+              x_pos_percent: 50,
+              y_pos_percent: 50,
+              width_percent: 100,
+              height_percent: 100,
             },
           ],
         },
