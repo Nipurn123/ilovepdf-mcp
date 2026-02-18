@@ -130,10 +130,11 @@ Or provide keys per-request (see examples below).
 
 ## Prerequisites
 
-**Important:** You need **two separate projects** at [iLoveAPI Projects](https://www.iloveapi.com/user/projects):
+**Important:** You need **separate projects** at [iLoveAPI Projects](https://www.iloveapi.com/user/projects):
 
-1. **PDF Project** - For all PDF tools (18 tools)
-2. **Image Project** - For image tools (6 tools) - Create an "iLoveIMG" project
+1. **PDF Project** - For all PDF tools (18 tools) - Select "PDF REST API"
+2. **Image Project** - For image tools (6 tools) - Select "Image REST API"
+3. **Signature Project** - For signature tools (6 tools) - Select "Signature REST API"
 
 Free tier: 250 files/month per project.
 
@@ -199,17 +200,22 @@ Set once in your MCP config and all tools will use them automatically:
 
 ### Example: Chain Operations
 
-Process a PDF through multiple operations without re-uploading:
+Chain multiple PDF operations without re-uploading. The parent task ID is returned in tool responses:
+
+1. First, run a PDF tool (e.g., `compress_pdf`) - it returns a `Task ID`
+2. Use that Task ID to chain to the next operation:
 
 ```json
 {
   "name": "chain_tasks",
   "arguments": {
-    "parent_task": "previous_task_id",
+    "parent_task": "g27d4mrsg3ztmnzAgm5d...",
     "next_tool": "watermark"
   }
 }
 ```
+
+3. After chaining, process the new task with the returned files
 
 ### Example: Create Signature Request
 

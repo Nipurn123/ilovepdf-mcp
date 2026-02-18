@@ -2,6 +2,16 @@ import { ToolDefinition, ILovePDFClient } from "../types.js";
 import * as path from "path";
 import * as fs from "fs";
 
+const commonPdfProps = {
+  public_key: { type: "string", description: "iLovePDF public key" },
+  secret_key: { type: "string", description: "iLovePDF secret key" },
+  keep_task: {
+    type: "boolean",
+    default: false,
+    description: "Keep task alive for chaining (task auto-expires in 2 hours)",
+  },
+};
+
 export const coreTools: ToolDefinition[] = [
   {
     name: "compress_pdf",
@@ -10,8 +20,7 @@ export const coreTools: ToolDefinition[] = [
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
-        secret_key: { type: "string", description: "iLovePDF secret key" },
+        ...commonPdfProps,
         file: { type: "string", description: "Path to PDF file or URL" },
         output: { type: "string", description: "Output file path" },
         compression_level: {
@@ -51,17 +60,30 @@ export const coreTools: ToolDefinition[] = [
         { compression_level: args.compression_level || "recommended" },
       );
 
+      if (args.keep_task) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `PDF compressed (task kept for chaining)!\nTask ID: ${taskInfo.task}\nServer: ${taskInfo.server}\nRemaining credits: ${taskInfo.remaining_credits}\n\nNext: Use chain_tasks to apply another tool, then download the result.`,
+            },
+          ],
+        };
+      }
+
       await client.downloadResult(
         taskInfo.server,
         taskInfo.task,
         args.output!.toString(),
       );
 
+      await client.deleteTask(taskInfo.server, taskInfo.task);
+
       return {
         content: [
           {
             type: "text",
-            text: `PDF compressed successfully!\nOutput: ${args.output}\nTask ID: ${taskInfo.task} (save for chaining)\nServer: ${taskInfo.server}\nRemaining credits: ${taskInfo.remaining_credits}`,
+            text: `PDF compressed successfully!\nOutput: ${args.output}\nRemaining credits: ${taskInfo.remaining_credits}`,
           },
         ],
       };

@@ -5,11 +5,14 @@ export const signatureTools: ToolDefinition[] = [
   {
     name: "create_signature_request",
     description:
-      "Create an e-signature request for PDF documents. Sends email to signers.",
+      "Create an e-signature request for PDF documents. Sends email to signers. NOTE: Requires a Signature project (create at https://www.iloveapi.com/user/projects - select 'Signature REST API').",
     inputSchema: {
       type: "object",
       properties: {
-        public_key: { type: "string", description: "iLovePDF public key" },
+        public_key: {
+          type: "string",
+          description: "iLovePDF Signature project public key",
+        },
         secret_key: { type: "string", description: "iLovePDF secret key" },
         files: {
           type: "array",

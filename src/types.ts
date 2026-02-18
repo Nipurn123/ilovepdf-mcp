@@ -246,9 +246,10 @@ export class ILovePDFClient {
   async connectTask(
     parentTask: string,
     nextTool: string,
+    server: string,
   ): Promise<{ task: string; server: string; files: Record<string, string> }> {
     const token = await this.getToken();
-    const response = await fetch(`${this.apiBase}/v1/task/next`, {
+    const response = await fetch(`https://${server}/v1/task/next`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
