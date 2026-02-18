@@ -56,13 +56,12 @@ export const coreTools: ToolDefinition[] = [
         taskInfo.task,
         args.output!.toString(),
       );
-      await client.deleteTask(taskInfo.server, taskInfo.task);
 
       return {
         content: [
           {
             type: "text",
-            text: `PDF compressed successfully!\nOutput: ${args.output}\nRemaining credits: ${taskInfo.remaining_credits}`,
+            text: `PDF compressed successfully!\nOutput: ${args.output}\nTask ID: ${taskInfo.task} (save for chaining)\nServer: ${taskInfo.server}\nRemaining credits: ${taskInfo.remaining_credits}`,
           },
         ],
       };
