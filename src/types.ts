@@ -1,6 +1,6 @@
 import { z } from "zod";
 import FormData from "form-data";
-import fetch from "node-fetch";
+import fetch, { RequestInit } from "node-fetch";
 import * as fs from "fs";
 
 export const AuthSchema = z.object({
@@ -130,7 +130,7 @@ export class ILovePDFClient {
         Authorization: `Bearer ${token}`,
         ...formData.getHeaders(),
       },
-      body: formData,
+      body: formData as unknown as RequestInit["body"],
     });
 
     if (!response.ok) {
@@ -156,7 +156,7 @@ export class ILovePDFClient {
         Authorization: `Bearer ${token}`,
         ...formData.getHeaders(),
       },
-      body: formData,
+      body: formData as unknown as RequestInit["body"],
     });
 
     if (!response.ok) {
