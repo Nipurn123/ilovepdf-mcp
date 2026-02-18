@@ -13,6 +13,8 @@ import { editTools } from "./tools/edit.js";
 import { securityTools } from "./tools/security.js";
 import { imageTools } from "./tools/image.js";
 import { utilityTools } from "./tools/utility.js";
+import { signatureTools } from "./tools/signature.js";
+import { chainTools } from "./tools/chain.js";
 
 const allTools: ToolDefinition[] = [
   ...coreTools,
@@ -21,6 +23,8 @@ const allTools: ToolDefinition[] = [
   ...securityTools,
   ...imageTools,
   ...utilityTools,
+  ...signatureTools,
+  ...chainTools,
 ];
 
 const IMAGE_TOOL_NAMES = new Set([
@@ -61,16 +65,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   const isImageTool = IMAGE_TOOL_NAMES.has(toolName);
 
-  // For image tools, prefer image_public_key if provided, otherwise use public_key
-  const publicKey = isImageTool
+  let publicKey = isImageTool
     ? (args.image_public_key as string) || (args.public_key as string)
     : (args.public_key as string);
-  const secretKey = args.secret_key as string;
+  let secretKey = args.secret_key as string;
+
+  if (!publicKey || !secretKey) {
+    publicKey = process.env.ILOVEPDF_PUBLIC_KEY || process.env.PUBLIC_KEY || "";
+    secretKey = process.env.ILOVEPDF_SECRET_KEY || process.env.SECRET_KEY || "";
+  }
 
   if (!publicKey || !secretKey) {
     const helpText = isImageTool
-      ? "Image tools require an iLoveIMG project. Create one at https://www.iloveapi.com/user/projects and use image_public_key parameter."
-      : "public_key and secret_key are required. Get free API keys from https://www.iloveapi.com/user/projects";
+      ? "Image tools require an iLoveIMG project. Create one at https://www.iloveapi.com/user/projects and use image_public_key parameter. Or set ILOVEPDF_PUBLIC_KEY and ILOVEPDF_SECRET_KEY environment variables."
+      : "public_key and secret_key are required. Get free API keys from https://www.iloveapi.com/user/projects or set ILOVEPDF_PUBLIC_KEY and ILOVEPDF_SECRET_KEY environment variables.";
     return {
       content: [{ type: "text", text: `Error: ${helpText}` }],
       isError: true,

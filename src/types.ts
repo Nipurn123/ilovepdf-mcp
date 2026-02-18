@@ -242,4 +242,160 @@ export class ILovePDFClient {
     const taskInfo = await this.startTask("compress");
     return taskInfo.remaining_credits;
   }
+
+  async connectTask(
+    parentTask: string,
+    nextTool: string,
+  ): Promise<{ task: string; server: string; files: Record<string, string> }> {
+    const token = await this.getToken();
+    const response = await fetch(`${this.apiBase}/v1/task/next`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ task: parentTask, tool: nextTool }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Connect task failed: ${response.status} - ${error}`);
+    }
+
+    return response.json() as Promise<{
+      task: string;
+      server: string;
+      files: Record<string, string>;
+    }>;
+  }
+
+  async createSignature(params: {
+    task: string;
+    files: Array<{ server_filename: string; filename: string }>;
+    signers: Array<{ name: string; email: string; order: number }>;
+    subject?: string;
+    message?: string;
+    expiration_days?: number;
+    reminders?: boolean;
+  }): Promise<string> {
+    const token = await this.getToken();
+    const response = await fetch(`${this.apiBase}/v1/signature`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        task: params.task,
+        files: params.files,
+        signers: params.signers,
+        subject: params.subject,
+        message: params.message,
+        expiration_days: params.expiration_days || 15,
+        reminders: params.reminders !== false,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Create signature failed: ${response.status} - ${error}`);
+    }
+
+    const data = (await response.json()) as { token: string };
+    return data.token;
+  }
+
+  async listSignatures(params: {
+    page?: number;
+    status?: string;
+  }): Promise<unknown> {
+    const token = await this.getToken();
+    const queryParams = new URLSearchParams();
+    queryParams.append("secret_key", this.auth.secret_key);
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.status) queryParams.append("status", params.status);
+
+    const response = await fetch(
+      `${this.apiBase}/v1/signature?${queryParams.toString()}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`List signatures failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async getSignatureStatus(signatureToken: string): Promise<unknown> {
+    const token = await this.getToken();
+    const response = await fetch(
+      `${this.apiBase}/v1/signature/${signatureToken}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Get signature failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async downloadSignedFiles(
+    signatureToken: string,
+    outputPath: string,
+  ): Promise<void> {
+    const token = await this.getToken();
+    const response = await fetch(
+      `${this.apiBase}/v1/signature/${signatureToken}/download`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Download signed files failed: ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.promises.writeFile(outputPath, buffer);
+  }
+
+  async voidSignature(signatureToken: string): Promise<void> {
+    const token = await this.getToken();
+    const response = await fetch(
+      `${this.apiBase}/v1/signature/${signatureToken}/void`,
+      {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Void signature failed: ${response.status}`);
+    }
+  }
+
+  async sendSignatureReminder(signatureToken: string): Promise<void> {
+    const token = await this.getToken();
+    const response = await fetch(
+      `${this.apiBase}/v1/signature/${signatureToken}/remind`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Send reminder failed: ${response.status}`);
+    }
+  }
 }

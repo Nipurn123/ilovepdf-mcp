@@ -1,6 +1,6 @@
-# iLovePDF MCP Server 📄🖼️
+# iLovePDF MCP Server
 
-A modular MCP server for iLovePDF and iLoveIMG APIs. 25+ tools organized by category.
+A modular MCP server for iLovePDF and iLoveIMG APIs. 35+ tools organized by category.
 
 [![npm version](https://img.shields.io/npm/v/ilovepdf-mcp.svg)](https://www.npmjs.com/package/ilovepdf-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,11 +9,13 @@ A modular MCP server for iLovePDF and iLoveIMG APIs. 25+ tools organized by cate
 ## Features
 
 - ✅ **Modular Architecture** - Tools organized by category in separate files
-- ✅ **25+ Tools** for PDF and image processing
+- ✅ **35+ Tools** for PDF and image processing
 - ✅ **PDF Tools**: Core, Convert, Edit, Security
 - ✅ **Image Tools**: Compress, Resize, Convert, Remove Background, Upscale
+- ✅ **Signature Tools**: Create, manage, and download e-signatures
+- ✅ **Chain Operations** - Connect multiple operations without re-uploading
+- ✅ **Environment Variables** - Set keys globally via `ILOVEPDF_PUBLIC_KEY` and `ILOVEPDF_SECRET_KEY`
 - ✅ **URL Support** - Process files from URLs
-- ✅ **Simple Auth** - Per-request API keys
 
 ## Modular Structure
 
@@ -27,6 +29,8 @@ src/
     ├── edit.ts       # watermark, page_numbers, ocr, extract_text
     ├── security.ts   # protect, unlock
     ├── image.ts      # compress, resize, convert, remove_bg, upscale
+    ├── signature.ts  # create, list, status, download, void, remind
+    ├── chain.ts      # chain_tasks
     └── utility.ts    # check_credits, validate_pdfa
 ```
 
@@ -39,11 +43,17 @@ Add to your MCP config:
   "mcpServers": {
     "ilovepdf": {
       "command": "npx",
-      "args": ["-y", "ilovepdf-mcp"]
+      "args": ["-y", "ilovepdf-mcp"],
+      "env": {
+        "ILOVEPDF_PUBLIC_KEY": "your_public_key",
+        "ILOVEPDF_SECRET_KEY": "your_secret_key"
+      }
     }
   }
 }
 ```
+
+Or provide keys per-request (see examples below).
 
 ## Tools by Category
 
@@ -94,6 +104,23 @@ Add to your MCP config:
 | `upscale_image`     | AI 2x/4x upscale        |
 | `watermark_image`   | Add watermark to images |
 
+### Signature (6 tools)
+
+| Tool                       | Description                 |
+| -------------------------- | --------------------------- |
+| `create_signature_request` | Create e-signature request  |
+| `list_signatures`          | List all signature requests |
+| `get_signature_status`     | Get status of a request     |
+| `download_signed_files`    | Download signed PDFs        |
+| `void_signature`           | Cancel a pending request    |
+| `send_signature_reminder`  | Send reminder to signers    |
+
+### Chain Operations (1 tool)
+
+| Tool          | Description                                   |
+| ------------- | --------------------------------------------- |
+| `chain_tasks` | Connect multiple operations without re-upload |
+
 ### Utility (2 tools)
 
 | Tool            | Description               |
@@ -112,7 +139,24 @@ Free tier: 250 files/month per project.
 
 ## Usage
 
-Use your **PDF project** keys for PDF tools, and **Image project** keys for image tools.
+### With Environment Variables
+
+Set once in your MCP config and all tools will use them automatically:
+
+```json
+{
+  "mcpServers": {
+    "ilovepdf": {
+      "command": "npx",
+      "args": ["-y", "ilovepdf-mcp"],
+      "env": {
+        "ILOVEPDF_PUBLIC_KEY": "your_public_key",
+        "ILOVEPDF_SECRET_KEY": "your_secret_key"
+      }
+    }
+  }
+}
+```
 
 ### Example: Compress PDF
 
@@ -120,8 +164,6 @@ Use your **PDF project** keys for PDF tools, and **Image project** keys for imag
 {
   "name": "compress_pdf",
   "arguments": {
-    "public_key": "your_public_key",
-    "secret_key": "your_secret_key",
     "file": "/path/to/input.pdf",
     "output": "/path/to/output.pdf",
     "compression_level": "recommended"
@@ -135,8 +177,6 @@ Use your **PDF project** keys for PDF tools, and **Image project** keys for imag
 {
   "name": "merge_pdf",
   "arguments": {
-    "public_key": "your_public_key",
-    "secret_key": "your_secret_key",
     "files": ["/path/to/file1.pdf", "/path/to/file2.pdf"],
     "output": "/path/to/merged.pdf"
   }
@@ -149,7 +189,7 @@ Use your **PDF project** keys for PDF tools, and **Image project** keys for imag
 {
   "name": "remove_background",
   "arguments": {
-    "public_key": "your_public_key",
+    "image_public_key": "your_image_project_public_key",
     "secret_key": "your_secret_key",
     "file": "/path/to/image.jpg",
     "output": "/path/to/output.png"
@@ -157,15 +197,33 @@ Use your **PDF project** keys for PDF tools, and **Image project** keys for imag
 }
 ```
 
-## Comparison with adamdavis99/ilovepdf-mcp
+### Example: Chain Operations
 
-| Feature                   | This Repo      | adamdavis99 |
-| ------------------------- | -------------- | ----------- |
-| **Modular Structure**     | ✅ Yes         | ❌ No       |
-| **Image Tools**           | ✅ 6 tools     | ❌ None     |
-| **Chain Operations**      | ❌ No          | ✅ Yes      |
-| **Signature Tools**       | ❌ No          | ✅ Yes      |
-| **Environment Variables** | ❌ Per-request | ✅ .env     |
+Process a PDF through multiple operations without re-uploading:
+
+```json
+{
+  "name": "chain_tasks",
+  "arguments": {
+    "parent_task": "previous_task_id",
+    "next_tool": "watermark"
+  }
+}
+```
+
+### Example: Create Signature Request
+
+```json
+{
+  "name": "create_signature_request",
+  "arguments": {
+    "files": ["/path/to/contract.pdf"],
+    "signers": [{ "name": "John Doe", "email": "john@example.com" }],
+    "subject": "Please sign this document",
+    "expiration_days": 15
+  }
+}
+```
 
 ## Development
 
