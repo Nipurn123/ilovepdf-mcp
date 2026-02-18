@@ -101,9 +101,18 @@ Add to your MCP config:
 | `check_credits` | Check API quota           |
 | `validate_pdfa` | Validate PDF/A compliance |
 
+## Prerequisites
+
+**Important:** You need **two separate projects** at [iLoveAPI Projects](https://www.iloveapi.com/user/projects):
+
+1. **PDF Project** - For all PDF tools (18 tools)
+2. **Image Project** - For image tools (6 tools) - Create an "iLoveIMG" project
+
+Free tier: 250 files/month per project.
+
 ## Usage
 
-All tools require API keys from [iLoveAPI Projects](https://www.iloveapi.com/user/projects) (free: 250 files/month).
+Use your **PDF project** keys for PDF tools, and **Image project** keys for image tools.
 
 ### Example: Compress PDF
 
