@@ -103,7 +103,7 @@ Add to your MCP config:
 
 ## Usage
 
-All tools require API keys from [developer.ilovepdf.com](https://developer.ilovepdf.com) (free: 250 files/month).
+All tools require API keys from [iLoveAPI Projects](https://www.iloveapi.com/user/projects) (free: 250 files/month).
 
 ### Example: Compress PDF
 
